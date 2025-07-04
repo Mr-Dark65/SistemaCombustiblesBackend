@@ -97,4 +97,54 @@ Backend/
 ## Notas adicionales
 
 - El sistema está preparado para escalar y agregar nuevos microservicios fácilmente.
-- Puedes extender la lógica de negocio, los modelos y los endpoints según las necesidades de tu organización. 
+- Puedes extender la lógica de negocio, los modelos y los endpoints según las necesidades de tu organización.
+
+## Integración de Kafka y mensajería entre microservicios
+
+El sistema utiliza Apache Kafka como bus de eventos para la comunicación asíncrona entre microservicios. Esto permite desacoplar los servicios y facilitar la auditoría, la integración y la escalabilidad.
+
+### Servicios involucrados y topics
+
+- **vehicle-service**: Publica eventos en el topic `vehicle-events` (creación, actualización de estado, asignación de chofer).
+- **route-service**: Publica eventos en `route-events` (creación, actualización, asignación de vehículo) y consume de `vehicle-events`.
+- **driver-service**: Publica eventos en `driver-events` (registro, actualización, asignación).
+- **fuel-consumption-service**: Publica eventos en `fuel-consumption-events` (registro de consumo) y consume de `vehicle-events` y `route-events`.
+- **auth-service**: Publica eventos de auditoría en `auth-events` (registro, login, login fallido) y puede consumirlos para auditoría.
+
+### Ejemplo de evento publicado
+```json
+{
+  "type": "CREATED",
+  "entity": "vehicle",
+  "data": {
+    "id": "...",
+    "plate": "ABC123",
+    "type": "Liviana",
+    "brand": "Toyota",
+    "model": "Corolla",
+    "year": 2020,
+    "status": "Disponible"
+  }
+}
+```
+
+### Cómo ver los mensajes de Kafka
+
+1. **Desde la consola del contenedor Kafka:**
+   ```sh
+   docker exec -it xyz-kafka bash
+   kafka-console-consumer --bootstrap-server localhost:9092 --topic vehicle-events --from-beginning
+   ```
+   Cambia `vehicle-events` por el topic que quieras ver.
+
+2. **Con herramientas visuales:**
+   Puedes agregar Kafdrop o Kafka UI a tu `docker-compose.yml` para monitorear topics y mensajes desde el navegador.
+
+### Variables de entorno relevantes
+
+- `KAFKA_BROKER`: Dirección del broker Kafka (por defecto `kafka:9092` en Docker Compose).
+- `VEHICLE_TOPIC`, `ROUTE_TOPIC`, `DRIVER_TOPIC`, `FUEL_TOPIC`, `AUTH_TOPIC`: Permiten personalizar los nombres de los topics si lo deseas.
+
+### Notas
+- Todos los microservicios publican eventos relevantes en Kafka automáticamente.
+- Puedes consumir estos eventos desde otros servicios o herramientas para auditoría, integración o análisis en tiempo real. 
