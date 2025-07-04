@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # Base de datos MongoDB
+  mongodb:
+    image: mongo:6.0
+    container_name: xyz-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-example}
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xyz-network
+
+  # Servicio de Autenticación
+  auth-service:
+    container_name: xyz-auth-service
+    build: ./auth-service
+    ports:
+      - "50051:50051"
+    environment:
+      - DB_HOST=mongodb
+      - DB_NAME=auth_service
+      - JWT_SECRET=${JWT_SECRET}
+      - MONGO_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - xyz-network
+
+  # Servicio de Vehículos
+  vehicle-service:
+    container_name: xyz-vehicle-service
+    build: ./vehicle-service
+    ports:
+      - "50052:50052"
+    environment:
+      - DB_HOST=mongodb
+      - DB_NAME=vehicle_service
+      - MONGO_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    depends_on:
+      - mongodb
+      - auth-service
+    networks:
+      - xyz-network
+
+  route-service:
+    container_name: xyz-route-service
+    build: ./route-service
+    environment:
+      - DB_HOST=mongodb
+      - DB_NAME=route_service
+      - MONGO_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - VEHICLE_SERVICE_HOST=vehicle-service:50052
+      - ROUTE_SERVICE_PORT=50053
+    depends_on:
+      - mongodb
+      - vehicle-service
+    ports:
+      - "50053:50053"
+    networks:
+      - xyz-network
+
+  api-gateway:
+    container_name: xyz-api-gateway
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - vehicle-service
+    networks:
+      - xyz-network
+
+  fuel-consumption-service:
+    container_name: xyz-fuel-consumption-service
+    build: ./fuel-consumption-service
+    environment:
+      - DB_HOST=mongodb
+      - DB_NAME=fuel_service
+      - MONGO_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - VEHICLE_SERVICE_HOST=vehicle-service:50052
+      - ROUTE_SERVICE_HOST=route-service:50053
+      - FUEL_SERVICE_PORT=50054
+    depends_on:
+      - mongodb
+      - vehicle-service
+      - route-service
+    ports:
+      - "50054:50054"
+    networks:
+      - xyz-network
+
+  driver-service:
+    container_name: xyz-driver-service
+    build: ./driver-service
+    environment:
+      - DB_HOST=mongodb
+      - DB_NAME=driver_service
+      - MONGO_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - VEHICLE_SERVICE_HOST=vehicle-service:50052
+      - ROUTE_SERVICE_HOST=route-service:50053
+      - DRIVER_SERVICE_PORT=50055
+    depends_on:
+      - mongodb
+      - vehicle-service
+      - route-service
+    ports:
+      - "50055:50055"
+    networks:
+      - xyz-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  xyz-network:
+    driver: bridge

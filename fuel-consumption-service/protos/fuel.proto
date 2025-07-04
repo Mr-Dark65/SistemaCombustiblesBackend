@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package fuel;
+
+service FuelService {
+  rpc RegisterFuelConsumption (RegisterFuelConsumptionRequest) returns (FuelConsumptionResponse);
+  rpc GetFuelConsumption (GetFuelConsumptionRequest) returns (FuelConsumptionResponse);
+  rpc ListFuelConsumptions (ListFuelConsumptionsRequest) returns (ListFuelConsumptionsResponse);
+  rpc ReportByVehicleType (ReportByVehicleTypeRequest) returns (ReportByVehicleTypeResponse);
+  rpc CompareEstimatedVsReal (CompareEstimatedVsRealRequest) returns (CompareEstimatedVsRealResponse);
+}
+
+message RegisterFuelConsumptionRequest {
+  string route_id = 1;
+  string vehicle_id = 2;
+  double fuel_amount = 3;
+}
+
+message GetFuelConsumptionRequest {
+  string id = 1;
+}
+
+message ListFuelConsumptionsRequest {
+  string route_id = 1;
+  string vehicle_id = 2;
+  string vehicle_type = 3; // "Liviana" o "Pesada"
+}
+
+message FuelConsumptionResponse {
+  string id = 1;
+  string route_id = 2;
+  string vehicle_id = 3;
+  double fuel_amount = 4;
+  string created_at = 5;
+}
+
+message ListFuelConsumptionsResponse {
+  repeated FuelConsumptionResponse consumptions = 1;
+}
+
+message ReportByVehicleTypeRequest {
+  string vehicle_type = 1; // "Liviana" o "Pesada"
+}
+
+message ReportByVehicleTypeResponse {
+  double total_fuel = 1;
+  int32 count = 2;
+  repeated FuelConsumptionResponse consumptions = 3;
+}
+
+message CompareEstimatedVsRealRequest {
+  string route_id = 1;
+}
+
+message CompareEstimatedVsRealResponse {
+  double estimated = 1;
+  double real = 2;
+  string unit = 3;
+} 

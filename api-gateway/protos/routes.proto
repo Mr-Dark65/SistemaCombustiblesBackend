@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package routes;
+
+service RouteService {
+  rpc CreateRoute (CreateRouteRequest) returns (RouteResponse);
+  rpc GetRoute (GetRouteRequest) returns (RouteResponse);
+  rpc ListRoutes (ListRoutesRequest) returns (ListRoutesResponse);
+  rpc UpdateRoute (UpdateRouteRequest) returns (RouteResponse);
+  rpc AssignRouteToVehicle (AssignRouteToVehicleRequest) returns (RouteResponse);
+  rpc CalculateFuelConsumption (CalculateFuelConsumptionRequest) returns (FuelConsumptionResponse);
+}
+
+message CreateRouteRequest {
+  string origin = 1;
+  string destination = 2;
+  double distance = 3;
+}
+
+message GetRouteRequest {
+  string id = 1;
+}
+
+message ListRoutesRequest {}
+
+message UpdateRouteRequest {
+  string id = 1;
+  string origin = 2;
+  string destination = 3;
+  double distance = 4;
+}
+
+message AssignRouteToVehicleRequest {
+  string route_id = 1;
+  string vehicle_id = 2;
+}
+
+message CalculateFuelConsumptionRequest {
+  string route_id = 1;
+  string vehicle_id = 2;
+}
+
+message RouteResponse {
+  string id = 1;
+  string origin = 2;
+  string destination = 3;
+  double distance = 4;
+  string vehicle_id = 5;
+}
+
+message ListRoutesResponse {
+  repeated RouteResponse routes = 1;
+}
+
+message FuelConsumptionResponse {
+  double estimated_consumption = 1;
+  string unit = 2;
+} 

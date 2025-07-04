@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package drivers;
+
+enum LicenseType {
+  Light = 0;
+  Heavy = 1;
+  Both = 2;
+}
+
+service DriverService {
+  rpc RegisterDriver (RegisterDriverRequest) returns (DriverResponse);
+  rpc GetDriver (GetDriverRequest) returns (DriverResponse);
+  rpc ListDrivers (ListDriversRequest) returns (ListDriversResponse);
+  rpc UpdateDriver (UpdateDriverRequest) returns (DriverResponse);
+  rpc AssignDriver (AssignDriverRequest) returns (AssignDriverResponse);
+}
+
+message RegisterDriverRequest {
+  string name = 1;
+  LicenseType license_type = 2;
+  bool availability = 3;
+}
+
+message GetDriverRequest {
+  string id = 1;
+}
+
+message ListDriversRequest {
+  oneof availability_filter {
+    bool availability = 1;
+  }
+  oneof license_type_filter {
+    LicenseType license_type = 2;
+  }
+}
+
+message UpdateDriverRequest {
+  string id = 1;
+  string name = 2;
+  LicenseType license_type = 3;
+  bool availability = 4;
+}
+
+message AssignDriverRequest {
+  string driver_id = 1;
+  string route_id = 2;
+  string vehicle_id = 3;
+}
+
+message DriverResponse {
+  string id = 1;
+  string name = 2;
+  LicenseType license_type = 3;
+  bool availability = 4;
+  string created_at = 5;
+}
+
+message ListDriversResponse {
+  repeated DriverResponse drivers = 1;
+}
+
+message AssignDriverResponse {
+  bool success = 1;
+  string message = 2;
+} 

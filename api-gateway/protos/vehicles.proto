@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package vehicles;
+
+service VehiclesService {
+    rpc CreateVehicle (CreateVehicleRequest) returns (VehicleResponse);
+    rpc GetVehicle (GetVehicleRequest) returns (VehicleResponse);
+    rpc ListVehicles (ListVehiclesRequest) returns (ListVehiclesResponse);
+    rpc UpdateVehicleStatus (UpdateStatusRequest) returns (VehicleResponse);
+    rpc AssignDriver (AssignDriverRequest) returns (VehicleResponse);
+}
+
+message CreateVehicleRequest {
+    string plate = 1;
+    string type = 2;  // Liviana/Pesada
+    string brand = 3;
+    string model = 4;
+    int32 year = 5;
+}
+
+message GetVehicleRequest {
+    string id = 1;
+}
+
+message ListVehiclesRequest {
+    string type_filter = 1;  // Opcional: "Liviana" o "Pesada"
+    string status_filter = 2; // Opcional: "Disponible", "En mantenimiento", etc.
+}
+
+message UpdateStatusRequest {
+    string vehicle_id = 1;
+    string new_status = 2;
+}
+
+message AssignDriverRequest {
+    string vehicle_id = 1;
+    string driver_id = 2;
+}
+
+message VehicleResponse {
+    string id = 1;
+    string plate = 2;
+    string type = 3;
+    string status = 4;
+    string brand = 5;
+    string model = 6;
+    int32 year = 7;
+    optional string assigned_driver = 8;
+}
+
+message ListVehiclesResponse {
+    repeated VehicleResponse vehicles = 1;
+}
