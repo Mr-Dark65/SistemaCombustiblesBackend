@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, Header, status, Body, Query
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List, Callable
 import grpc
 import auth_pb2, auth_pb2_grpc
@@ -12,6 +13,15 @@ import inspect
 from enum import Enum
 
 app = FastAPI(title="API Gateway")
+
+# Configuración de CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],  
+)
 
 # Service hosts
 AUTH_SERVICE_HOST = "auth-service:50051"
