@@ -4,10 +4,16 @@ import logging
 from database import init_db
 from generated import vehicles_pb2_grpc
 from vehicle_controller import VehicleController
+from kafka_utils import VehicleKafkaProducer
 
 def serve():
     # Inicializar la base de datos
     init_db()
+    
+    # Inicializar Kafka Producer
+    kafka_producer = VehicleKafkaProducer()
+    # Ejemplo: enviar un evento de arranque (puedes eliminarlo o adaptarlo)
+    kafka_producer.send_vehicle_event({'type': 'SERVICE_STARTED'})
     
     # Configurar el servidor gRPC
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

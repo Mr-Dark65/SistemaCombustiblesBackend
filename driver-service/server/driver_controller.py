@@ -5,6 +5,7 @@ import drivers_pb2, drivers_pb2_grpc
 from mongoengine.errors import DoesNotExist
 from datetime import datetime
 import os
+from kafka_utils import DriverKafkaProducer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("drivers-controller")
@@ -25,6 +26,10 @@ def get_route_stub():
     return RouteServiceStub(channel), routes_pb2
 
 class DriverService(drivers_pb2_grpc.DriverServiceServicer):
+    def __init__(self):
+        super().__init__()
+        self.kafka_producer = DriverKafkaProducer()
+
     def RegisterDriver(self, request, context):
         logger.info(f"Registrando chofer: {request.name}, licencia: {request.license_type}, disponible: {request.availability}")
         driver = Driver(
@@ -34,6 +39,17 @@ class DriverService(drivers_pb2_grpc.DriverServiceServicer):
             created_at=datetime.utcnow()
         )
         driver.save()
+        # Enviar evento Kafka
+        self.kafka_producer.send_driver_event({
+            "type": "CREATED",
+            "entity": "driver",
+            "data": {
+                "id": str(driver.id),
+                "name": driver.name,
+                "license_type": driver.license_type,
+                "availability": driver.availability
+            }
+        })
         return drivers_pb2.DriverResponse(
             id=str(driver.id),
             name=driver.name,
@@ -85,6 +101,17 @@ class DriverService(drivers_pb2_grpc.DriverServiceServicer):
             driver.license_type = request.license_type
             driver.availability = request.availability
             driver.save()
+            # Enviar evento Kafka
+            self.kafka_producer.send_driver_event({
+                "type": "UPDATED",
+                "entity": "driver",
+                "data": {
+                    "id": str(driver.id),
+                    "name": driver.name,
+                    "license_type": driver.license_type,
+                    "availability": driver.availability
+                }
+            })
             return drivers_pb2.DriverResponse(
                 id=str(driver.id),
                 name=driver.name,
@@ -120,6 +147,16 @@ class DriverService(drivers_pb2_grpc.DriverServiceServicer):
             # Marcar chofer como no disponible
             driver.availability = False
             driver.save()
+            # Enviar evento Kafka
+            self.kafka_producer.send_driver_event({
+                "type": "ASSIGNED",
+                "entity": "driver",
+                "data": {
+                    "id": str(driver.id),
+                    "route_id": request.route_id,
+                    "vehicle_id": request.vehicle_id
+                }
+            })
             # (Opcional) Actualizar la ruta con el chofer asignado
             # route_stub, routes_pb2 = get_route_stub()
             # route_stub.UpdateRouteWithDriver(routes_pb2.UpdateRouteWithDriverRequest(route_id=request.route_id, driver_id=str(driver.id)))

@@ -3,8 +3,13 @@ from generated import vehicles_pb2
 from generated import vehicles_pb2_grpc
 from models import Vehicle
 from datetime import datetime
+from kafka_utils import VehicleKafkaProducer
 
 class VehicleController(vehicles_pb2_grpc.VehiclesServiceServicer):
+    def __init__(self):
+        super().__init__()
+        self.kafka_producer = VehicleKafkaProducer()
+
     def CreateVehicle(self, request, context):
         try:
             # Validar tipo de vehículo
@@ -24,6 +29,21 @@ class VehicleController(vehicles_pb2_grpc.VehiclesServiceServicer):
                 created_at=datetime.utcnow()
             )
             vehicle.save()
+            
+            # Enviar evento Kafka
+            self.kafka_producer.send_vehicle_event({
+                "type": "CREATED",
+                "entity": "vehicle",
+                "data": {
+                    "id": str(vehicle.id),
+                    "plate": vehicle.plate,
+                    "type": vehicle.type,
+                    "brand": vehicle.brand,
+                    "model": vehicle.model,
+                    "year": vehicle.year,
+                    "status": vehicle.status
+                }
+            })
             
             return vehicles_pb2.VehicleResponse(
                 id=str(vehicle.id),
@@ -84,6 +104,16 @@ class VehicleController(vehicles_pb2_grpc.VehiclesServiceServicer):
             vehicle.status = request.new_status
             vehicle.save()
             
+            # Enviar evento Kafka
+            self.kafka_producer.send_vehicle_event({
+                "type": "UPDATED_STATUS",
+                "entity": "vehicle",
+                "data": {
+                    "id": str(vehicle.id),
+                    "status": vehicle.status
+                }
+            })
+            
             return self._vehicle_to_response(vehicle)
         except Exception as e:
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -100,6 +130,16 @@ class VehicleController(vehicles_pb2_grpc.VehiclesServiceServicer):
             
             vehicle.assigned_driver = request.driver_id
             vehicle.save()
+            
+            # Enviar evento Kafka
+            self.kafka_producer.send_vehicle_event({
+                "type": "ASSIGNED_DRIVER",
+                "entity": "vehicle",
+                "data": {
+                    "id": str(vehicle.id),
+                    "assigned_driver": vehicle.assigned_driver
+                }
+            })
             
             return self._vehicle_to_response(vehicle)
         except Exception as e:

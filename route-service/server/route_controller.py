@@ -4,6 +4,7 @@ from models import Route
 import routes_pb2, routes_pb2_grpc
 from mongoengine.errors import DoesNotExist
 import os
+from kafka_utils import RouteKafkaProducer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("routes-controller")
@@ -16,6 +17,10 @@ def get_vehicle_stub():
     return vehicles_pb2_grpc.VehiclesServiceStub(channel), vehicles_pb2
 
 class RouteService(routes_pb2_grpc.RouteServiceServicer):
+    def __init__(self):
+        super().__init__()
+        self.kafka_producer = RouteKafkaProducer()
+
     def CreateRoute(self, request, context):
         logger.info(f"Creando ruta: {request.origin} -> {request.destination}, {request.distance} km")
         route = Route(
@@ -24,6 +29,17 @@ class RouteService(routes_pb2_grpc.RouteServiceServicer):
             distance=request.distance
         )
         route.save()
+        # Enviar evento Kafka
+        self.kafka_producer.send_route_event({
+            "type": "CREATED",
+            "entity": "route",
+            "data": {
+                "id": str(route.id),
+                "origin": route.origin,
+                "destination": route.destination,
+                "distance": route.distance
+            }
+        })
         return routes_pb2.RouteResponse(
             id=str(route.id),
             origin=route.origin,
@@ -70,6 +86,17 @@ class RouteService(routes_pb2_grpc.RouteServiceServicer):
             route.destination = request.destination
             route.distance = request.distance
             route.save()
+            # Enviar evento Kafka
+            self.kafka_producer.send_route_event({
+                "type": "UPDATED",
+                "entity": "route",
+                "data": {
+                    "id": str(route.id),
+                    "origin": route.origin,
+                    "destination": route.destination,
+                    "distance": route.distance
+                }
+            })
             return routes_pb2.RouteResponse(
                 id=str(route.id),
                 origin=route.origin,
@@ -89,6 +116,15 @@ class RouteService(routes_pb2_grpc.RouteServiceServicer):
             logger.info(f"Asignando ruta {route.id} al vehículo {request.vehicle_id}")
             route.vehicle_id = request.vehicle_id
             route.save()
+            # Enviar evento Kafka
+            self.kafka_producer.send_route_event({
+                "type": "ASSIGNED_VEHICLE",
+                "entity": "route",
+                "data": {
+                    "id": str(route.id),
+                    "vehicle_id": route.vehicle_id
+                }
+            })
             return routes_pb2.RouteResponse(
                 id=str(route.id),
                 origin=route.origin,

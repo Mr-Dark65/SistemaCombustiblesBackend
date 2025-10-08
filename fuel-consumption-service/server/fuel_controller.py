@@ -5,6 +5,8 @@ import fuel_pb2, fuel_pb2_grpc
 from mongoengine.errors import DoesNotExist
 from datetime import datetime
 import os
+from kafka_utils import VehicleKafkaConsumer, RouteKafkaConsumer
+from kafka import KafkaProducer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("fuel-controller")
@@ -25,6 +27,16 @@ def get_route_stub():
     return RouteServiceStub(channel), routes_pb2
 
 class FuelService(fuel_pb2_grpc.FuelServiceServicer):
+    def __init__(self):
+        super().__init__()
+        # Producer para eventos de consumo
+        import json
+        self.kafka_producer = KafkaProducer(
+            bootstrap_servers=[os.getenv('KAFKA_BROKER', 'kafka:9092')],
+            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+        )
+        self.topic = os.getenv('FUEL_TOPIC', 'fuel-consumption-events')
+
     def RegisterFuelConsumption(self, request, context):
         logger.info(f"Registrando consumo: ruta={request.route_id}, vehiculo={request.vehicle_id}, litros={request.fuel_amount}")
         consumo = FuelConsumption(
@@ -34,6 +46,19 @@ class FuelService(fuel_pb2_grpc.FuelServiceServicer):
             created_at=datetime.utcnow()
         )
         consumo.save()
+        # Enviar evento Kafka
+        self.kafka_producer.send(self.topic, {
+            "type": "REGISTERED",
+            "entity": "fuel_consumption",
+            "data": {
+                "id": str(consumo.id),
+                "route_id": consumo.route_id,
+                "vehicle_id": consumo.vehicle_id,
+                "fuel_amount": consumo.fuel_amount,
+                "created_at": consumo.created_at.isoformat()
+            }
+        })
+        self.kafka_producer.flush()
         return fuel_pb2.FuelConsumptionResponse(
             id=str(consumo.id),
             route_id=consumo.route_id,
