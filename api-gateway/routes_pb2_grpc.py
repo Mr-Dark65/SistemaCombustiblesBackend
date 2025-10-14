@@ -34,6 +34,11 @@ class RouteServiceStub(object):
                 request_serializer=routes__pb2.UpdateRouteRequest.SerializeToString,
                 response_deserializer=routes__pb2.RouteResponse.FromString,
                 )
+        self.DeleteRoute = channel.unary_unary(
+                '/routes.RouteService/DeleteRoute',
+                request_serializer=routes__pb2.GetRouteRequest.SerializeToString,
+                response_deserializer=routes__pb2.RouteResponse.FromString,
+                )
         self.AssignRouteToVehicle = channel.unary_unary(
                 '/routes.RouteService/AssignRouteToVehicle',
                 request_serializer=routes__pb2.AssignRouteToVehicleRequest.SerializeToString,
