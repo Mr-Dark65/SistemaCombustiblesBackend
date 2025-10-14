@@ -1,6 +1,6 @@
 import grpc
-from generated import vehicles_pb2
-from generated import vehicles_pb2_grpc
+import vehicles_pb2
+import vehicles_pb2_grpc
 from models import Vehicle
 from datetime import datetime
 from kafka_utils import VehicleKafkaProducer
@@ -138,6 +138,35 @@ class VehicleController(vehicles_pb2_grpc.VehiclesServiceServicer):
                 "data": {
                     "id": str(vehicle.id),
                     "assigned_driver": vehicle.assigned_driver
+                }
+            })
+            
+            return self._vehicle_to_response(vehicle)
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return vehicles_pb2.VehicleResponse()
+
+    def RemoveDriver(self, request, context):
+        try:
+            vehicle = Vehicle.objects(id=request.vehicle_id).first()
+            if not vehicle:
+                context.set_code(grpc.StatusCode.NOT_FOUND)
+                context.set_details("Vehículo no encontrado")
+                return vehicles_pb2.VehicleResponse()
+            
+            # Guardar el ID del chofer antes de removerlo para el evento
+            removed_driver_id = vehicle.assigned_driver
+            vehicle.assigned_driver = None
+            vehicle.save()
+            
+            # Enviar evento Kafka
+            self.kafka_producer.send_vehicle_event({
+                "type": "REMOVED_DRIVER",
+                "entity": "vehicle",
+                "data": {
+                    "id": str(vehicle.id),
+                    "removed_driver": removed_driver_id
                 }
             })
             

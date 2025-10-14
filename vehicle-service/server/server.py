@@ -2,7 +2,7 @@ from concurrent import futures
 import grpc
 import logging
 from database import init_db
-from generated import vehicles_pb2_grpc
+import vehicles_pb2_grpc
 from vehicle_controller import VehicleController
 from kafka_utils import VehicleKafkaProducer
 
