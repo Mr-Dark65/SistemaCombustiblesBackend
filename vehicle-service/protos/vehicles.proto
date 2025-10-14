@@ -8,6 +8,7 @@ service VehiclesService {
     rpc ListVehicles (ListVehiclesRequest) returns (ListVehiclesResponse);
     rpc UpdateVehicleStatus (UpdateStatusRequest) returns (VehicleResponse);
     rpc AssignDriver (AssignDriverRequest) returns (VehicleResponse);
+    rpc RemoveDriver (RemoveDriverRequest) returns (VehicleResponse);
 }
 
 message CreateVehicleRequest {
@@ -35,6 +36,10 @@ message UpdateStatusRequest {
 message AssignDriverRequest {
     string vehicle_id = 1;
     string driver_id = 2;
+}
+
+message RemoveDriverRequest {
+    string vehicle_id = 1;
 }
 
 message VehicleResponse {
