@@ -82,10 +82,30 @@ class RouteService(routes_pb2_grpc.RouteServiceServicer):
         try:
             route = Route.objects.get(id=request.id)
             logger.info(f"Actualizando ruta: {route.id}")
-            route.origin = request.origin
-            route.destination = request.destination
-            route.distance = request.distance
+            
+            # Solo actualizar campos que se envían (no vacíos)
+            updated_fields = []
+            if request.HasField('origin') and request.origin.strip():
+                route.origin = request.origin
+                updated_fields.append('origin')
+            
+            if request.HasField('destination') and request.destination.strip():
+                route.destination = request.destination
+                updated_fields.append('destination')
+            
+            if request.HasField('distance') and request.distance > 0:
+                route.distance = request.distance
+                updated_fields.append('distance')
+            
+            if not updated_fields:
+                context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+                context.set_details("No se proporcionaron campos válidos para actualizar")
+                logger.warning(f"No se proporcionaron campos válidos para actualizar ruta: {request.id}")
+                return routes_pb2.RouteResponse()
+            
             route.save()
+            logger.info(f"Campos actualizados en ruta {route.id}: {', '.join(updated_fields)}")
+            
             # Enviar evento Kafka
             self.kafka_producer.send_route_event({
                 "type": "UPDATED",
@@ -94,7 +114,8 @@ class RouteService(routes_pb2_grpc.RouteServiceServicer):
                     "id": str(route.id),
                     "origin": route.origin,
                     "destination": route.destination,
-                    "distance": route.distance
+                    "distance": route.distance,
+                    "updated_fields": updated_fields
                 }
             })
             return routes_pb2.RouteResponse(

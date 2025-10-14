@@ -25,9 +25,9 @@ message ListRoutesRequest {}
 
 message UpdateRouteRequest {
   string id = 1;
-  string origin = 2;
-  string destination = 3;
-  double distance = 4;
+  optional string origin = 2;
+  optional string destination = 3;
+  optional double distance = 4;
 }
 
 message AssignRouteToVehicleRequest {

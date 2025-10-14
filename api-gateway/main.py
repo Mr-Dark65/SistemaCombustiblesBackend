@@ -12,6 +12,14 @@ from pydantic import BaseModel
 import inspect
 from enum import Enum
 
+class UpdateRouteBody(BaseModel):
+    origin: Optional[str] = None
+    destination: Optional[str] = None
+    distance: Optional[float] = None
+
+class AssignVehicleBody(BaseModel):
+    vehicle_id: str
+
 app = FastAPI(title="API Gateway")
 
 # Configuración de CORS
@@ -233,15 +241,34 @@ def list_routes(token_data: TokenData = Depends(validate_token)):
 
 @app.put("/routes/{route_id}", tags=["Routes"])
 @require_valid_token
-def update_route(route_id: str, origin: str = Body(...), destination: str = Body(...), distance: float = Body(...), token_data: TokenData = Depends(validate_token)):
+def update_route(route_id: str, body: UpdateRouteBody, token_data: TokenData = Depends(validate_token)):
     if token_data.role != 'Admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo Admin puede actualizar rutas.")
+    
+    # Validar que al menos un campo se proporcione
+    if not any([body.origin, body.destination, body.distance is not None]):
+        raise HTTPException(status_code=400, detail="Debe proporcionar al menos un campo para actualizar (origin, destination, o distance)")
+    
     stub = get_route_stub()
-    req = routes_pb2.UpdateRouteRequest(id=route_id, origin=origin, destination=destination, distance=distance)
+    
+    # Construir request con solo los campos proporcionados
+    req_kwargs = {"id": route_id}
+    if body.origin is not None:
+        req_kwargs["origin"] = body.origin
+    if body.destination is not None:
+        req_kwargs["destination"] = body.destination
+    if body.distance is not None:
+        req_kwargs["distance"] = body.distance
+    
+    req = routes_pb2.UpdateRouteRequest(**req_kwargs)
     try:
         res = stub.UpdateRoute(req)
         return _route_response_to_dict(res)
     except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            raise HTTPException(status_code=404, detail="Ruta no encontrada")
+        elif e.code() == grpc.StatusCode.INVALID_ARGUMENT:
+            raise HTTPException(status_code=400, detail=e.details())
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/routes/{route_id}", tags=["Routes"])
@@ -259,8 +286,6 @@ def delete_route(route_id: str, token_data: TokenData = Depends(validate_token))
             raise HTTPException(status_code=404, detail="Ruta no encontrada")
         raise HTTPException(status_code=500, detail=str(e))
 
-class AssignVehicleBody(BaseModel):
-    vehicle_id: str
 
 @app.put("/routes/{route_id}/assign-vehicle", tags=["Routes"])
 @require_valid_token
