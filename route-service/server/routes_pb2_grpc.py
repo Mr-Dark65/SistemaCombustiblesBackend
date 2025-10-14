@@ -213,6 +213,23 @@ class RouteService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def DeleteRoute(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/routes.RouteService/DeleteRoute',
+            routes__pb2.GetRouteRequest.SerializeToString,
+            routes__pb2.RouteResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def AssignRouteToVehicle(request,
             target,
             options=(),
