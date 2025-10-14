@@ -164,6 +164,21 @@ def assign_driver(vehicle_id: str, driver_id: str, token_data: TokenData = Depen
     except grpc.RpcError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/vehicles/{vehicle_id}/driver", tags=["vehicles"])
+@require_valid_token
+def remove_driver(vehicle_id: str, token_data: TokenData = Depends(validate_token)):
+    if token_data.role not in ['Admin', 'Supervisor']:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo Admin y Supervisor pueden remover choferes.")
+    stub = get_vehicles_stub()
+    req = vehicles_pb2.RemoveDriverRequest(vehicle_id=vehicle_id)
+    try:
+        res = stub.RemoveDriver(req)
+        return _vehicle_response_to_dict(res)
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+        raise HTTPException(status_code=500, detail=str(e))
+
 def _vehicle_response_to_dict(res):
     return {
         "id": res.id,
