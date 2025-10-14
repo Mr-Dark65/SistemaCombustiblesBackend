@@ -110,6 +110,38 @@ class RouteService(routes_pb2_grpc.RouteServiceServicer):
             logger.warning(f"Ruta no encontrada para actualizar: {request.id}")
             return routes_pb2.RouteResponse()
 
+    def DeleteRoute(self, request, context):
+        try:
+            route = Route.objects.get(id=request.id)
+            logger.info(f"Eliminando ruta: {route.id}")
+            # Guardar datos para el evento antes de eliminar
+            route_data = {
+                "id": str(route.id),
+                "origin": route.origin,
+                "destination": route.destination,
+                "distance": route.distance,
+                "vehicle_id": route.vehicle_id or ""
+            }
+            route.delete()
+            # Enviar evento Kafka
+            self.kafka_producer.send_route_event({
+                "type": "DELETED",
+                "entity": "route",
+                "data": route_data
+            })
+            return routes_pb2.RouteResponse(
+                id=route_data["id"],
+                origin=route_data["origin"],
+                destination=route_data["destination"],
+                distance=route_data["distance"],
+                vehicle_id=route_data["vehicle_id"]
+            )
+        except DoesNotExist:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            context.set_details("Ruta no encontrada")
+            logger.warning(f"Ruta no encontrada para eliminar: {request.id}")
+            return routes_pb2.RouteResponse()
+
     def AssignRouteToVehicle(self, request, context):
         try:
             route = Route.objects.get(id=request.route_id)

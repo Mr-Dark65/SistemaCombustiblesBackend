@@ -229,6 +229,21 @@ def update_route(route_id: str, origin: str = Body(...), destination: str = Body
     except grpc.RpcError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/routes/{route_id}", tags=["Routes"])
+@require_valid_token
+def delete_route(route_id: str, token_data: TokenData = Depends(validate_token)):
+    if token_data.role != 'Admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo Admin puede eliminar rutas.")
+    stub = get_route_stub()
+    req = routes_pb2.GetRouteRequest(id=route_id)
+    try:
+        res = stub.DeleteRoute(req)
+        return _route_response_to_dict(res)
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            raise HTTPException(status_code=404, detail="Ruta no encontrada")
+        raise HTTPException(status_code=500, detail=str(e))
+
 class AssignVehicleBody(BaseModel):
     vehicle_id: str
 

@@ -34,6 +34,11 @@ class RouteServiceStub(object):
                 request_serializer=routes__pb2.UpdateRouteRequest.SerializeToString,
                 response_deserializer=routes__pb2.RouteResponse.FromString,
                 )
+        self.DeleteRoute = channel.unary_unary(
+                '/routes.RouteService/DeleteRoute',
+                request_serializer=routes__pb2.GetRouteRequest.SerializeToString,
+                response_deserializer=routes__pb2.RouteResponse.FromString,
+                )
         self.AssignRouteToVehicle = channel.unary_unary(
                 '/routes.RouteService/AssignRouteToVehicle',
                 request_serializer=routes__pb2.AssignRouteToVehicleRequest.SerializeToString,
@@ -73,6 +78,12 @@ class RouteServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def DeleteRoute(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def AssignRouteToVehicle(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -106,6 +117,11 @@ def add_RouteServiceServicer_to_server(servicer, server):
             'UpdateRoute': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateRoute,
                     request_deserializer=routes__pb2.UpdateRouteRequest.FromString,
+                    response_serializer=routes__pb2.RouteResponse.SerializeToString,
+            ),
+            'DeleteRoute': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteRoute,
+                    request_deserializer=routes__pb2.GetRouteRequest.FromString,
                     response_serializer=routes__pb2.RouteResponse.SerializeToString,
             ),
             'AssignRouteToVehicle': grpc.unary_unary_rpc_method_handler(
