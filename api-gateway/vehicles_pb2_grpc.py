@@ -39,6 +39,11 @@ class VehiclesServiceStub(object):
                 request_serializer=vehicles__pb2.AssignDriverRequest.SerializeToString,
                 response_deserializer=vehicles__pb2.VehicleResponse.FromString,
                 )
+        self.RemoveDriver = channel.unary_unary(
+                '/vehicles.VehiclesService/RemoveDriver',
+                request_serializer=vehicles__pb2.RemoveDriverRequest.SerializeToString,
+                response_deserializer=vehicles__pb2.VehicleResponse.FromString,
+                )
 
 
 class VehiclesServiceServicer(object):
@@ -74,6 +79,12 @@ class VehiclesServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def RemoveDriver(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_VehiclesServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -100,6 +111,11 @@ def add_VehiclesServiceServicer_to_server(servicer, server):
             'AssignDriver': grpc.unary_unary_rpc_method_handler(
                     servicer.AssignDriver,
                     request_deserializer=vehicles__pb2.AssignDriverRequest.FromString,
+                    response_serializer=vehicles__pb2.VehicleResponse.SerializeToString,
+            ),
+            'RemoveDriver': grpc.unary_unary_rpc_method_handler(
+                    servicer.RemoveDriver,
+                    request_deserializer=vehicles__pb2.RemoveDriverRequest.FromString,
                     response_serializer=vehicles__pb2.VehicleResponse.SerializeToString,
             ),
     }
@@ -193,6 +209,23 @@ class VehiclesService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/vehicles.VehiclesService/AssignDriver',
             vehicles__pb2.AssignDriverRequest.SerializeToString,
+            vehicles__pb2.VehicleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RemoveDriver(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/vehicles.VehiclesService/RemoveDriver',
+            vehicles__pb2.RemoveDriverRequest.SerializeToString,
             vehicles__pb2.VehicleResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

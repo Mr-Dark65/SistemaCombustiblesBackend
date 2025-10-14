@@ -14,27 +14,29 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0evehicles.proto\x12\x08vehicles\"_\n\x14\x43reateVehicleRequest\x12\r\n\x05plate\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\r\n\x05\x62rand\x18\x03 \x01(\t\x12\r\n\x05model\x18\x04 \x01(\t\x12\x0c\n\x04year\x18\x05 \x01(\x05\"\x1f\n\x11GetVehicleRequest\x12\n\n\x02id\x18\x01 \x01(\t\"A\n\x13ListVehiclesRequest\x12\x13\n\x0btype_filter\x18\x01 \x01(\t\x12\x15\n\rstatus_filter\x18\x02 \x01(\t\"=\n\x13UpdateStatusRequest\x12\x12\n\nvehicle_id\x18\x01 \x01(\t\x12\x12\n\nnew_status\x18\x02 \x01(\t\"<\n\x13\x41ssignDriverRequest\x12\x12\n\nvehicle_id\x18\x01 \x01(\t\x12\x11\n\tdriver_id\x18\x02 \x01(\t\"\xa8\x01\n\x0fVehicleResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05plate\x18\x02 \x01(\t\x12\x0c\n\x04type\x18\x03 \x01(\t\x12\x0e\n\x06status\x18\x04 \x01(\t\x12\r\n\x05\x62rand\x18\x05 \x01(\t\x12\r\n\x05model\x18\x06 \x01(\t\x12\x0c\n\x04year\x18\x07 \x01(\x05\x12\x1c\n\x0f\x61ssigned_driver\x18\x08 \x01(\tH\x00\x88\x01\x01\x42\x12\n\x10_assigned_driver\"C\n\x14ListVehiclesResponse\x12+\n\x08vehicles\x18\x01 \x03(\x0b\x32\x19.vehicles.VehicleResponse2\x8d\x03\n\x0fVehiclesService\x12J\n\rCreateVehicle\x12\x1e.vehicles.CreateVehicleRequest\x1a\x19.vehicles.VehicleResponse\x12\x44\n\nGetVehicle\x12\x1b.vehicles.GetVehicleRequest\x1a\x19.vehicles.VehicleResponse\x12M\n\x0cListVehicles\x12\x1d.vehicles.ListVehiclesRequest\x1a\x1e.vehicles.ListVehiclesResponse\x12O\n\x13UpdateVehicleStatus\x12\x1d.vehicles.UpdateStatusRequest\x1a\x19.vehicles.VehicleResponse\x12H\n\x0c\x41ssignDriver\x12\x1d.vehicles.AssignDriverRequest\x1a\x19.vehicles.VehicleResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0evehicles.proto\x12\x08vehicles\"Z\n\x12\x43reateVehicleRequest\x12\r\n\x05plate\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\r\n\x05brand\x18\x03 \x01(\t\x12\r\n\x05model\x18\x04 \x01(\t\x12\x0c\n\x04year\x18\x05 \x01(\x05\"\x1f\n\x0fGetVehicleRequest\x12\x0c\n\x04id\x18\x01 \x01(\t\"A\n\x11ListVehiclesRequest\x12\x13\n\x0btype_filter\x18\x01 \x01(\t\x12\x17\n\x0fstatus_filter\x18\x02 \x01(\t\"7\n\x12UpdateStatusRequest\x12\x13\n\x0bvehicle_id\x18\x01 \x01(\t\x12\x12\n\nnew_status\x18\x02 \x01(\t\"7\n\x12\x41ssignDriverRequest\x12\x13\n\x0bvehicle_id\x18\x01 \x01(\t\x12\x12\n\ndriver_id\x18\x02 \x01(\t\"\'\n\x12RemoveDriverRequest\x12\x11\n\tvehicle_id\x18\x01 \x01(\t\"\x8a\x01\n\rVehicleResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05plate\x18\x02 \x01(\t\x12\x0c\n\x04type\x18\x03 \x01(\t\x12\x0e\n\x06status\x18\x04 \x01(\t\x12\r\n\x05brand\x18\x05 \x01(\t\x12\r\n\x05model\x18\x06 \x01(\t\x12\x0c\n\x04year\x18\x07 \x01(\x05\x12\x18\n\x10\x61ssigned_driver\x18\x08 \x01(\t\"=\n\x13ListVehiclesResponse\x12&\n\x08vehicles\x18\x01 \x03(\x0b\x32\x14.vehicles.VehicleResponse2\xb8\x02\n\x0eVehiclesService\x12\x43\n\x0c\x43reateVehicle\x12\x1c.vehicles.CreateVehicleRequest\x1a\x15.vehicles.VehicleResponse\x12:\n\tGetVehicle\x12\x19.vehicles.GetVehicleRequest\x1a\x15.vehicles.VehicleResponse\x12\x46\n\x0bListVehicles\x12\x1b.vehicles.ListVehiclesRequest\x1a\x1a.vehicles.ListVehiclesResponse\x12I\n\x10UpdateVehicleStatus\x12\x1c.vehicles.UpdateStatusRequest\x1a\x15.vehicles.VehicleResponse\x12\x43\n\x0c\x41ssignDriver\x12\x1c.vehicles.AssignDriverRequest\x1a\x15.vehicles.VehicleResponse\x12\x43\n\x0cRemoveDriver\x12\x1c.vehicles.RemoveDriverRequest\x1a\x15.vehicles.VehicleResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'vehicles_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_CREATEVEHICLEREQUEST']._serialized_start=28
-  _globals['_CREATEVEHICLEREQUEST']._serialized_end=123
-  _globals['_GETVEHICLEREQUEST']._serialized_start=125
-  _globals['_GETVEHICLEREQUEST']._serialized_end=156
-  _globals['_LISTVEHICLESREQUEST']._serialized_start=158
-  _globals['_LISTVEHICLESREQUEST']._serialized_end=223
-  _globals['_UPDATESTATUSREQUEST']._serialized_start=225
-  _globals['_UPDATESTATUSREQUEST']._serialized_end=286
-  _globals['_ASSIGNDRIVERREQUEST']._serialized_start=288
-  _globals['_ASSIGNDRIVERREQUEST']._serialized_end=348
-  _globals['_VEHICLERESPONSE']._serialized_start=351
-  _globals['_VEHICLERESPONSE']._serialized_end=519
-  _globals['_LISTVEHICLESRESPONSE']._serialized_start=521
-  _globals['_LISTVEHICLESRESPONSE']._serialized_end=588
-  _globals['_VEHICLESSERVICE']._serialized_start=591
-  _globals['_VEHICLESSERVICE']._serialized_end=988
+  _globals['_CREATEVEHICLEREQUEST']._serialized_start=24
+  _globals['_CREATEVEHICLEREQUEST']._serialized_end=114
+  _globals['_GETVEHICLEREQUEST']._serialized_start=116
+  _globals['_GETVEHICLEREQUEST']._serialized_end=147
+  _globals['_LISTVEHICLESREQUEST']._serialized_start=149
+  _globals['_LISTVEHICLESREQUEST']._serialized_end=214
+  _globals['_UPDATESTATUSREQUEST']._serialized_start=216
+  _globals['_UPDATESTATUSREQUEST']._serialized_end=271
+  _globals['_ASSIGNDRIVERREQUEST']._serialized_start=273
+  _globals['_ASSIGNDRIVERREQUEST']._serialized_end=328
+  _globals['_REMOVEDRIVERREQUEST']._serialized_start=330
+  _globals['_REMOVEDRIVERREQUEST']._serialized_end=369
+  _globals['_VEHICLERESPONSE']._serialized_start=372
+  _globals['_VEHICLERESPONSE']._serialized_end=510
+  _globals['_LISTVEHICLESRESPONSE']._serialized_start=512
+  _globals['_LISTVEHICLESRESPONSE']._serialized_end=573
+  _globals['_VEHICLESSERVICE']._serialized_start=576
+  _globals['_VEHICLESSERVICE']._serialized_end=888
 # @@protoc_insertion_point(module_scope)
