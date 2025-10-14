@@ -1,6 +1,6 @@
 import grpc
-from generated import vehicles_pb2
-from generated import vehicles_pb2_grpc
+import vehicles_pb2
+import vehicles_pb2_grpc
 from models import Vehicle
 from datetime import datetime
 from kafka_utils import VehicleKafkaProducer
