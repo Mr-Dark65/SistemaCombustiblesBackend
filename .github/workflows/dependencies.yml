@@ -1,0 +1,43 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Ejecutar semanalmente
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Check for Dependency Updates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit dependencies
+        run: |
+          for service in auth-service vehicle-service route-service fuel-consumption-service driver-service api-gateway; do
+            echo "Checking $service..."
+            if [ -f "$service/requirements.txt" ]; then
+              pip-audit -r "$service/requirements.txt" || true
+            fi
+          done
+
+      - name: Check for updates with pip-check
+        run: |
+          pip install pip-check
+          for service in auth-service vehicle-service route-service fuel-consumption-service driver-service api-gateway; do
+            echo "Checking updates for $service..."
+            if [ -f "$service/requirements.txt" ]; then
+              pip install -r "$service/requirements.txt" > /dev/null 2>&1
+              pip-check || true
+            fi
+          done
